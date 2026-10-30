@@ -1,0 +1,33 @@
+# Master Agent Prompt
+agent.md
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ruff_cache/
+
+# Project Dynamic Directories
+temp/*
+!temp/.gitkeep
+output/*
+!output/.gitkeep
+input/*
+!input/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
