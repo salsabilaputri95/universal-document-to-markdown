@@ -1,0 +1,8 @@
+streamlit
+docling
+markitdown[pdf,docx,xlsx,pptx]
+pandas
+openpyxl
+pillow
+pytest
+ruff
