@@ -1,8 +1,12 @@
 # ⚡ OmniMark
 
-> **Universal Document to Markdown — Local-First, Fast, and Secure**
+> **Universal Document to Markdown & Markdown to Document — Local-First, Fast, and Secure**
 
-**OmniMark** adalah aplikasi desktop-web lokal modern untuk mengonversi berbagai format dokumen bisnis, akademik, dan teknis (`.pdf`, `.docx`, `.xlsx`, `.pptx`, `.csv`) menjadi Markdown (`.md`) berkualitas tinggi. Aplikasi dirancang dengan prinsip **local-first** dan **struktur-terjaga**, memastikan dokumen diproses secara offline di komputer lokal tanpa mengirim data pengguna ke cloud atau layanan pihak ketiga.
+**OmniMark** adalah aplikasi desktop-web lokal modern untuk konversi dua arah dokumen:
+1. **Document to Markdown**: Mengonversi PDF, Word (`.docx`), Excel (`.xlsx`), PowerPoint (`.pptx`), dan CSV (`.csv`) menjadi Markdown (`.md`) berkualitas tinggi.
+2. **Markdown to Document**: Mengonversi file atau teks Markdown (`.md`) kembali menjadi dokumen Microsoft Word (`.docx`), PDF (`.pdf`), dan presentasi PowerPoint (`.pptx`) dengan mempertahankan heading, numbering, bullets, tabel, gambar, dan formatting.
+
+Aplikasi dirancang dengan prinsip **local-first** dan **struktur-terjaga**, memastikan seluruh pemrosesan berlangsung offline di komputer lokal tanpa mengirim data pengguna ke cloud atau layanan pihak ketiga.
 
 ---
 
@@ -47,6 +51,10 @@ Fokus utama OmniMark adalah **mempertahankan struktur dokumen**:
 ## ✨ Fitur Utama
 
 - **🔒 100% Local-First & Offline**: Tidak memerlukan koneksi internet saat konversi, tanpa database eksternal, tanpa API OpenAI/Gemini/Claude, dan tanpa ketergantungan Ollama.
+- **🔄 Ekspor Markdown ke Word, PDF, dan PowerPoint (`Markdown to Document`)**:
+  - **Microsoft Word (.docx)**: Penomoran asli Word (`w:num`), heading 1–9, pemformatan teks, tabel dengan header berulang, kutipan, dan blok kode terarsir.
+  - **PDF (.pdf)**: Menggunakan ReportLab Platypus murni lokal, styling tipografi profesional (A4/Letter), list berbutir bertingkat, dan tabel auto-fit.
+  - **PowerPoint (.pptx)**: Mengubah heading menjadi judul slide, poin bernomor/berbutir asli (`buAutoNum`/`buChar`), tabel dan gambar di slide terpisah, serta pemisahan slide otomatis jika teks melebihi kapasitas layar.
 - **⚡ Smart Engine Selection & Fallback**:
   - **Docling**: Engine utama untuk PDF kompleks, jurnal ilmiah multi-kolom, OCR, dan tabel visual.
   - **Microsoft MarkItDown**: Engine alternatif resmi untuk konversi dokumen standar.
@@ -134,13 +142,20 @@ universal-document-to-markdown/
 │   ├── excel_processor.py      # Pengolah Excel multi-sheet, formulas & merged cells
 │   ├── file_validator.py       # Validator format, magic bytes, file kosong, password
 │   ├── image_processor.py      # Ekstraksi, penamaan aman & relative path gambar
-│   └── export_manager.py       # Pembuat output single .md & arsip ZIP
+│   ├── export_manager.py       # Pembuat output single .md & arsip ZIP
+│   ├── md_parser.py            # Parser Markdown-to-AST agnostik format
+│   ├── md_render_common.py     # Image resolver lokal & kalkulator skala gambar
+│   ├── md_to_docx.py           # Renderer Word (.docx) dengan penomoran asli Word
+│   ├── md_to_pdf.py            # Renderer PDF (ReportLab Platypus) dengan auto-fit tabel
+│   ├── md_to_pptx.py           # Renderer PowerPoint (.pptx) dengan bullets & split slide
+│   └── markdown_exporter.py    # Orkestrator ekspor Markdown ke Word, PDF, dan PPTX
 │
 ├── components/                 # Komponen antarmuka modular (Streamlit)
 │   ├── __init__.py
 │   ├── sidebar.py              # Navigasi halaman & ringkasan status sistem
 │   ├── uploader.py             # Area upload & tabel pra-validasi dokumen
 │   ├── settings_panel.py       # Panel pengaturan engine, OCR, dan style Markdown
+│   ├── md_to_doc_panel.py      # Panel konversi Markdown -> Word / PDF / PPTX
 │   ├── preview.py              # Komponen preview (Rendered, Source, Gambar)
 │   ├── result_card.py          # Kartu status konversi per file
 │   └── history.py              # Halaman riwayat sesi konversi pengguna
@@ -152,7 +167,7 @@ universal-document-to-markdown/
 │   ├── zip_utils.py            # Pembuat file ZIP & verifikasi integritas arsip
 │   └── logger.py               # Logger rotasi file tanpa membocorkan konten sensitif
 │
-├── tests/                      # Rangkaian pengujian otomatis (28 tests)
+├── tests/                      # Rangkaian pengujian otomatis (34 tests)
 │   ├── __init__.py
 │   ├── test_converter.py       # Uji konversi CSV, XLSX, dan file tidak valid
 │   ├── test_document_formats.py# Uji PDF digital, DOCX, PPTX, batch error isolation
@@ -161,6 +176,7 @@ universal-document-to-markdown/
 │   ├── test_file_utils.py      # Uji sanitasi nama Windows (CON, NUL, path traversal)
 │   ├── test_file_validator.py  # Uji deteksi file kosong, corrupt, ekstensi ilegal
 │   ├── test_markdown_utils.py  # Uji kalkulasi kata, karakter, dan format RAG
+│   ├── test_md_to_doc.py       # Uji ekspor Markdown ke DOCX, PDF, dan PPTX
 │   ├── test_ui.py              # Uji headless Streamlit startup dan navigasi halaman
 │   └── test_zip_utils.py       # Uji integritas pembuatan file ZIP dan metadata
 │
@@ -445,7 +461,7 @@ Contoh file **`metadata.json`**:
 
 ## 🧪 Pengujian Otomatis (Testing)
 
-Aplikasi memiliki **28 skenario pengujian komprehensif** menggunakan `pytest` yang mencakup seluruh aspek arsitektur:
+Aplikasi memiliki **34 skenario pengujian komprehensif** menggunakan `pytest` yang mencakup seluruh aspek arsitektur (konversi dua arah, unit, integrasi, dan UI):
 
 Jalankan seluruh pengujian:
 
@@ -456,36 +472,42 @@ python -m pytest tests -v
 Hasil pengujian aktual:
 
 ```text
-tests/test_converter.py::test_convert_csv PASSED                         [  3%]
-tests/test_converter.py::test_convert_xlsx_auto PASSED                   [  7%]
-tests/test_converter.py::test_convert_invalid_file PASSED                [ 10%]
-tests/test_document_formats.py::test_pdf_digital_conversion PASSED       [ 14%]
-tests/test_document_formats.py::test_docx_conversion_with_headings_and_tables PASSED [ 17%]
-tests/test_document_formats.py::test_pptx_conversion PASSED              [ 21%]
-tests/test_document_formats.py::test_batch_conversion_error_isolation PASSED [ 25%]
-tests/test_document_formats.py::test_image_processor_and_reference PASSED [ 28%]
-tests/test_excel_processor.py::test_excel_processor_multi_sheet PASSED   [ 32%]
-tests/test_fallback.py::test_converter_docling_fallback_to_markitdown PASSED [ 35%]
-tests/test_file_utils.py::test_sanitize_filename PASSED                  [ 39%]
-tests/test_file_utils.py::test_format_file_size PASSED                   [ 42%]
-tests/test_file_utils.py::test_is_safe_path PASSED                       [ 46%]
-tests/test_file_utils.py::test_isolated_temp_dir PASSED                  [ 50%]
-tests/test_file_validator.py::test_validate_nonexistent_file PASSED      [ 53%]
-tests/test_file_validator.py::test_validate_unsupported_extension PASSED [ 57%]
-tests/test_file_validator.py::test_validate_empty_file PASSED            [ 60%]
-tests/test_file_validator.py::test_validate_valid_csv PASSED             [ 64%]
-tests/test_file_validator.py::test_validate_corrupt_pdf PASSED           [ 67%]
-tests/test_markdown_utils.py::test_count_markdown_stats PASSED           [ 71%]
-tests/test_markdown_utils.py::test_count_markdown_stats_empty PASSED     [ 75%]
-tests/test_markdown_utils.py::test_format_markdown_standard PASSED       [ 78%]
-tests/test_markdown_utils.py::test_format_markdown_with_metadata PASSED  [ 82%]
-tests/test_markdown_utils.py::test_format_markdown_rag PASSED            [ 85%]
-tests/test_ui.py::test_ui_initial_render PASSED                          [ 89%]
-tests/test_ui.py::test_ui_navigate_pages PASSED                          [ 92%]
-tests/test_zip_utils.py::test_zip_creation_and_integrity PASSED          [ 96%]
+tests/test_converter.py::test_convert_csv PASSED                         [  2%]
+tests/test_converter.py::test_convert_xlsx_auto PASSED                   [  5%]
+tests/test_converter.py::test_convert_invalid_file PASSED                [  8%]
+tests/test_document_formats.py::test_pdf_digital_conversion PASSED       [ 11%]
+tests/test_document_formats.py::test_docx_conversion_with_headings_and_tables PASSED [ 14%]
+tests/test_document_formats.py::test_pptx_conversion PASSED              [ 17%]
+tests/test_document_formats.py::test_batch_conversion_error_isolation PASSED [ 20%]
+tests/test_document_formats.py::test_image_processor_and_reference PASSED [ 23%]
+tests/test_excel_processor.py::test_excel_processor_multi_sheet PASSED   [ 26%]
+tests/test_fallback.py::test_converter_docling_fallback_to_markitdown PASSED [ 29%]
+tests/test_file_utils.py::test_sanitize_filename PASSED                  [ 32%]
+tests/test_file_utils.py::test_format_file_size PASSED                   [ 35%]
+tests/test_file_utils.py::test_is_safe_path PASSED                       [ 38%]
+tests/test_file_utils.py::test_isolated_temp_dir PASSED                  [ 41%]
+tests/test_file_validator.py::test_validate_nonexistent_file PASSED      [ 44%]
+tests/test_file_validator.py::test_validate_unsupported_extension PASSED [ 47%]
+tests/test_file_validator.py::test_validate_empty_file PASSED            [ 50%]
+tests/test_file_validator.py::test_validate_valid_csv PASSED             [ 52%]
+tests/test_file_validator.py::test_validate_corrupt_pdf PASSED           [ 55%]
+tests/test_markdown_utils.py::test_count_markdown_stats PASSED           [ 58%]
+tests/test_markdown_utils.py::test_count_markdown_stats_empty PASSED     [ 61%]
+tests/test_markdown_utils.py::test_format_markdown_standard PASSED       [ 64%]
+tests/test_markdown_utils.py::test_format_markdown_with_metadata PASSED  [ 67%]
+tests/test_markdown_utils.py::test_format_markdown_rag PASSED            [ 70%]
+tests/test_md_to_doc.py::test_parse_markdown_comprehensive PASSED        [ 73%]
+tests/test_md_to_doc.py::test_render_docx_output PASSED                  [ 76%]
+tests/test_md_to_doc.py::test_render_pdf_output PASSED                   [ 79%]
+tests/test_md_to_doc.py::test_render_pptx_output PASSED                  [ 82%]
+tests/test_md_to_doc.py::test_export_all_formats_together PASSED         [ 85%]
+tests/test_md_to_doc.py::test_export_file_validations PASSED             [ 88%]
+tests/test_ui.py::test_ui_initial_render PASSED                          [ 91%]
+tests/test_ui.py::test_ui_navigate_pages PASSED                          [ 94%]
+tests/test_zip_utils.py::test_zip_creation_and_integrity PASSED          [ 97%]
 tests/test_zip_utils.py::test_export_manager_batch_zip PASSED            [100%]
 
-============================= 28 passed in 29.96s =============================
+============================= 34 passed =============================
 ```
 
 Jalankan pemeriksaan kepatuhan kode (*linting*):

@@ -28,7 +28,8 @@ def render_sidebar() -> str:
 
         # Navigation options
         pages = {
-            "convert": ("🔄", "Convert Documents"),
+            "convert": ("🔄", "Doc to Markdown"),
+            "md_to_doc": ("📝", "Markdown to Doc"),
             "dashboard": ("📊", "Dashboard"),
             "history": ("📜", "Conversion History"),
             "settings": ("⚙️", "Settings"),

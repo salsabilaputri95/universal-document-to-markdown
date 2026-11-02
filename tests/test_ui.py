@@ -18,6 +18,11 @@ def test_ui_navigate_pages():
     at.run()
     assert not at.exception
 
+    # Simulate navigating to Markdown to Document
+    at.session_state.active_page = "md_to_doc"
+    at.run()
+    assert not at.exception
+
     # Simulate navigating to Dashboard
     at.session_state.active_page = "dashboard"
     at.run()

@@ -3,6 +3,7 @@
 import streamlit as st
 
 from components.history import render_history_page
+from components.md_to_doc_panel import render_md_to_doc_page
 from components.preview import render_preview_section
 from components.result_card import render_result_card
 from components.settings_panel import render_conversion_options
@@ -225,17 +226,19 @@ def render_about_page():
     st.markdown("## ℹ️ About OmniMark")
     st.markdown(
         """
-        **OmniMark** adalah aplikasi desktop-web lokal modern untuk mengonversi berbagai format dokumen
-        menjadi Markdown (`.md`) dengan mempertahankan hierarki heading, tabel data, daftar berbutir,
-        serta ekstraksi gambar visual secara aman (*local-first*).
+        **OmniMark** adalah aplikasi desktop-web lokal modern untuk konversi dua arah dokumen:
+        - **Document to Markdown**: PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx), CSV (.csv) -> Markdown (.md).
+        - **Markdown to Document**: Markdown (.md) -> dokumen Word (.docx), PDF (.pdf), dan PowerPoint (.pptx).
+        
+        Semua proses mempertahankan hierarki heading, penomoran, poin berbutir, tabel data,
+        dan pemformatan teks visual secara aman (*local-first*).
 
         ### 🏗️ Arsitektur & Teknologi
         - **Nama Produk**: OmniMark
         - **Framework UI**: Streamlit 1.66+
-        - **Primary Engine**: IBM Docling (Layout analysis, complex tables, OCR)
-        - **Alternative Engine**: Microsoft MarkItDown (Universal document conversion)
-        - **Excel Engine**: OpenPyXL & Pandas (Multi-sheet, merged cells, cached formulas)
-        - **OCR Utilities**: Tesseract OCR & Poppler
+        - **Document to Markdown Engines**: IBM Docling, Microsoft MarkItDown, OpenPyXL & Pandas
+        - **Markdown to Document Renderers**: python-docx, ReportLab (PDF), python-pptx
+        - **Utilitas OCR**: Tesseract OCR & Poppler
         - **Standard**: Markdown GFM (GitHub Flavored Markdown)
 
         ### 🔒 Komitmen Local-First
@@ -251,6 +254,8 @@ def main():
 
     if selected_page == "convert":
         render_convert_page()
+    elif selected_page == "md_to_doc":
+        render_md_to_doc_page()
     elif selected_page == "dashboard":
         render_dashboard_page()
     elif selected_page == "history":

@@ -74,11 +74,21 @@ class AppSettings:
     CLEANUP_TEMP_FILES: bool = True
     LOG_LEVEL: str = "INFO"
 
+    # Markdown -> Document export
+    MARKDOWN_EXTENSIONS: list[str] = field(default_factory=lambda: [".md", ".markdown"])
+    EXPORT_FORMATS: list[str] = field(default_factory=lambda: ["docx", "pdf", "pptx"])
+    EXPORT_IMAGE_EXTENSIONS: list[str] = field(
+        default_factory=lambda: [".png", ".jpg", ".jpeg", ".gif", ".bmp"]
+    )
+    PDF_PAGE_SIZES: list[str] = field(default_factory=lambda: ["A4", "Letter"])
+    MD_EXPORT_DIR: Path = field(init=False)
+
     def __post_init__(self):
         self.INPUT_DIR = self.BASE_DIR / "input"
         self.OUTPUT_DIR = self.BASE_DIR / "output"
         self.TEMP_DIR = self.BASE_DIR / "temp"
         self.LOGS_DIR = self.BASE_DIR / "logs"
+        self.MD_EXPORT_DIR = self.OUTPUT_DIR / "md_exports"
 
         # Ensure directory structures exist
         for directory in [self.INPUT_DIR, self.OUTPUT_DIR, self.TEMP_DIR, self.LOGS_DIR]:
