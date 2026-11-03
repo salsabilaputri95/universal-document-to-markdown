@@ -10,7 +10,7 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import (
     PdfPipelineOptions,
     RapidOcrOptions,
-    TesseractOcrOptions,
+    TesseractCliOcrOptions,
 )
 from docling.document_converter import (
     DocumentConverter,
@@ -55,12 +55,12 @@ class DoclingEngine:
 
             if settings.TESSERACT_CMD and Path(settings.TESSERACT_CMD).exists():
                 try:
-                    pipeline_options.ocr_options = TesseractOcrOptions(
-                        path=settings.TESSERACT_CMD,
+                    pipeline_options.ocr_options = TesseractCliOcrOptions(
+                        tesseract_cmd=settings.TESSERACT_CMD,
                         lang=langs,
                     )
                 except Exception as err:
-                    logger.warning(f"Could not initialize TesseractOcrOptions: {err}, falling back to RapidOcr")
+                    logger.warning(f"Could not initialize TesseractCliOcrOptions: {err}, falling back to RapidOcr")
                     pipeline_options.ocr_options = RapidOcrOptions()
             else:
                 pipeline_options.ocr_options = RapidOcrOptions()
